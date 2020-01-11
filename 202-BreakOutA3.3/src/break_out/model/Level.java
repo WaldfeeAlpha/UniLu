@@ -1,6 +1,12 @@
 package break_out.model;
+import java.awt.Robot;
+import java.awt.AWTException;
+import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import break_out.Constants;
+import break_out.controller.JSONReader;
 
 /**
  * This class contains information about the running game
@@ -15,11 +21,15 @@ public class Level extends Thread implements ILevel {
 	 */
 	private Game game;
 
+	private ArrayList<Stone>stones=new ArrayList<Stone>();
+	
 	/**
 	 * The number of the level
 	 */
 	private int levelnr;
 
+	private int vita;
+	
 	/**
 	 * The score of the level
 	 */
@@ -120,13 +130,39 @@ public class Level extends Thread implements ILevel {
 				// Tells the observer to repaint the components on the playground
 				game.notifyObservers();
 				
+				
 				paddleTop.updatePosition(ball);
 				paddleBottom.updatePosition(ball);
 				// hitting test of the paddles
 				if (ball.hitsPaddle(paddleTop)) {ball.reflectOnPaddle(paddleTop);}
 				
 				if (ball.hitsPaddle(paddleBottom)) {ball.reflectOnPaddle(paddleBottom);}
+				
+				if(ball.hitsStone(stones)) {
+				Rectangle ballRect = new Rectangle((int)ball.getPosition().getX(),(int)ball.getPosition().getY(),
+						Constants.BALL_DIAMETER, Constants.BALL_DIAMETER);
+				Rectangle stoneRect = new Rectangle((int)ball.getHitStone().getPosition().getX(),(int)ball.getHitStone().getPosition().getY(),
+						(Constants.SCREEN_WIDTH/Constants.SQUARES_X)-3, (Constants.SCREEN_HEIGHT/Constants.SQUARES_Y)-3);
+				ball.reflectOnStone(ballRect, stoneRect);
+				updateStonesAndScore();
+				if(allStonesBroken()) {
+					setFinished(true);
+					Robot robot;
+					try {
+						robot = new Robot();
+						robot.keyPress(KeyEvent.VK_ESCAPE);
+						robot.keyRelease(KeyEvent.VK_ESCAPE);
+					} catch (AWTException e) {
+						
+					}
+					
+				}
+				}
+		
+
 			}
+			
+			
 			// The thread pauses for a short time
 			try {
 				Thread.sleep(4);
@@ -143,9 +179,36 @@ public class Level extends Thread implements ILevel {
 	 * @param levelnr The number X for the LevelX.json file
 	 */
 	private void loadLevelData(int levelnr) {
-
+		JSONReader reader = new JSONReader("res/Level"+levelnr+".json");
+		int[][] stoneTypes = reader.getStones2DArray();
+		this.vita=reader.getLifeCounter();
+		
+		for(int y=0; y<Constants.SQUARES_Y; y++) {
+			for(int x=0; x<Constants.SQUARES_X; x++) {
+				if(stoneTypes[y][x] !=0) {
+					Position stonePosition = new Position((Constants.SCREEN_WIDTH/Constants.SQUARES_X)*x,
+														 (Constants.SCREEN_HEIGHT/Constants.SQUARES_Y)*y);
+					Stone stone = new Stone(stoneTypes[y][x], stonePosition);
+					stones.add(stone);
+				}
+			}
+			
+		}
 	}
+	private boolean allStonesBroken() {
+		return this.stones.size()==0;
+	}
+	
 
+	private void updateStonesAndScore() {
+		this.score = ball.getHitStone().getValue();
+		if(ball.getHitStone().getType() -1>0) {
+			ball.getHitStone().setType(ball.getHitStone().getType()-1);
+		}else{
+		this.stones.remove(ball.getHitStone());	
+		}
+	}
+	
 	@Override
 	public Paddle getPaddleTop() {
 		return this.paddleTop;
@@ -155,8 +218,21 @@ public class Level extends Thread implements ILevel {
 	public Paddle getPaddleBottom() {
 		return this.paddleBottom;
 	}
+	
+	public ArrayList<Stone> getStone(){
+		ArrayList<Stone> exemplum=new ArrayList<>();
+		exemplum.addAll(stones);
+		return exemplum;
+	}
+	
 	@Override
 	public void setFinished(boolean finished) {
 		this.finished=finished;
+	}
+
+	@Override
+	public ArrayList<Stone> getStones() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

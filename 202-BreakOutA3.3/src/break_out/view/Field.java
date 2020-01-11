@@ -9,6 +9,7 @@ import java.awt.RenderingHints;
 import javax.swing.JPanel;
 
 import break_out.Constants;
+import break_out.model.Stone;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -94,11 +95,13 @@ public class Field extends JPanel {
 		// Setting the color for the following components
 		g2.setColor(new Color(200, 200, 200));
 		
+		drawGrid(g2);	//A1.1
 		// Calls the method for drawing the ball
 		drawBall(g2);	
 		drawPaddleBottom(g2);
 		drawPaddleTop(g2);
-		drawGrid(g2);	//A1.1
+		drawStones(g2);
+		
 	}
 	/**
 	 * A1.1 draw the Grid
@@ -122,7 +125,7 @@ public class Field extends JPanel {
 	
 	
 	/**
-	 * Draws the ball
+	 * Draws the ball + padds
 	 * @param g2 The graphics object
 	 */
 	private void drawBall(Graphics2D g2) {
@@ -133,6 +136,7 @@ public class Field extends JPanel {
 	}
 
 	private void drawPaddleBottom(Graphics2D g2) {
+		g2.setColor(view.getGame().getLevel().getPaddleBottom().getColor());
 		g2.fillRoundRect((int) view.getGame().getLevel().getPaddleBottom().getPosition().getX(),
 				         (int) view.getGame().getLevel().getPaddleBottom().getPosition().getY(), 
 				         (int) view.getGame().getLevel().getPaddleBottom().getWidth(),
@@ -140,10 +144,26 @@ public class Field extends JPanel {
 				         15,15);
 	}
 	private void drawPaddleTop(Graphics2D g2) {
+		g2.setColor(view.getGame().getLevel().getPaddleTop().getColor());
 		g2.fillRoundRect((int) view.getGame().getLevel().getPaddleTop().getPosition().getX(),
 				         (int) view.getGame().getLevel().getPaddleTop().getPosition().getY(), 
 				         (int) view.getGame().getLevel().getPaddleTop().getWidth(),
 				         (int) view.getGame().getLevel().getPaddleTop().getHeight(), 
 				         15,15);
 	}
+	
+	private void drawStones(Graphics2D g2) {
+		for(Stone stone : view.getGame().getLevel().getStone()) {
+			g2.setColor(stone.getColor());
+			g2.fillRoundRect((int) stone.getPosition().getX()+2, (int)stone.getPosition().getY()+2, 
+					Constants.SCREEN_WIDTH/ Constants.SQUARES_X-3, Constants.SCREEN_HEIGHT/Constants.SQUARES_Y-3, 1, 1);
+		}
+	}
 }
+
+
+
+
+
+
+

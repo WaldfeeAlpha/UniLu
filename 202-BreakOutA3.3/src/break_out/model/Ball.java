@@ -1,5 +1,8 @@
 package break_out.model;
 
+import java.awt.Rectangle;
+import java.util.ArrayList;
+
 import break_out.Constants;
 
 /**
@@ -20,6 +23,9 @@ public class Ball implements IBall {
 	 * The balls direction
 	 */
 	private Vector2D direction;
+	
+	private Stone rollingStones;
+	
 
 	/**
 	 * The constructor of a ball The balls position and direction are initialized
@@ -120,5 +126,37 @@ public class Ball implements IBall {
 			this.direction = new Vector2D(offset, current);
 			direction.rescale();
 		}
+	}
+	
+	public void reflectOnStone(Rectangle ballRect, Rectangle stoneRect) {
+		Rectangle simul = stoneRect.intersection(ballRect);
+		if(simul.getHeight() >simul.getWidth()) {
+			direction.setDx(direction.getDx()*(-1));
+		}else if(simul.getHeight() <simul.getWidth()) {
+			direction.setDy(direction.getDy()*(-1));
+		}
+		else {
+			direction.setDx(direction.getDx()*(-1));
+			direction.setDy(direction.getDy()*(-1));
+		}
+	}
+
+	@Override
+	public boolean hitsStone(ArrayList<Stone> stones) {
+		for(Stone stone : stones) {
+			if(position.getX()+Constants.BALL_DIAMETER>=stone.getPosition().getX()&&
+			   position.getX()<=stone.getPosition().getX()+(Constants.SCREEN_WIDTH/Constants.SQUARES_X)&&
+			   position.getY()+Constants.BALL_DIAMETER>=stone.getPosition().getY()&&
+			   position.getY()<=stone.getPosition().getY()+(Constants.SCREEN_HEIGHT/Constants.SQUARES_Y)) {
+			this.rollingStones = stone;
+			return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public Stone getHitStone() {
+		return this.rollingStones;
 	}
 }

@@ -40,6 +40,17 @@ public class Stone implements IStone{
     }
     public void setType(int type) {
     	this.type=type;
+    	if(type ==1) {
+    		this.value=5;
+    		this.color=Color.DARK_GRAY;
+    	}else if(type==2) {
+    		this.value=10;
+    		this.color=Color.BLUE;
+    	}else if(type==3) {
+    		this.value=15;
+    		this.color=Color.RED;
+    	}
+    
     }
     public void setValue(int value) {
     	this.value=value;
